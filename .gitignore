@@ -1,0 +1,6 @@
+target/
+local.properties
+.idea/
+*.iml
+.vscode/
+*.log

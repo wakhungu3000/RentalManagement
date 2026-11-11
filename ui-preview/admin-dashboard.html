@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin Dashboard — Rental Property Management System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}" href="css/style.css">
+</head>
+<body>
+
+<div class="app-shell">
+
+    <!-- Sidebar: identical on every owner page. Later move into
+         fragments/sidebar.html and include it with th:replace. -->
+    <aside class="sidebar">
+        <span class="wordmark">Nyumba Ledger</span>
+        <nav>
+            <a th:href="@{/dashboard}" href="admin-dashboard.html" class="active">Dashboard</a>
+            <a th:href="@{/houses}" href="houses.html">House Management</a>
+            <a th:href="@{/tenants}" href="tenants.html">Tenant Management</a>
+            <a th:href="@{/payments}" href="payments.html">Rent Payments</a>
+            <a th:href="@{/maintenance}" href="maintenance.html">Maintenance Requests</a>
+            <a th:href="@{/reports}" href="reports.html">Reports</a>
+        </nav>
+        <div class="logout">
+            <a th:href="@{/logout}" href="login.html" id="logoutLink">Log out</a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="page-header">
+            <div>
+                <h1>Dashboard</h1>
+                <p class="subtitle">Welcome back<span th:text="${ownerName != null ? ', ' + ownerName : ''}">, Property Owner</span>. Here’s where things stand today.</p>
+            </div>
+            <div class="page-actions"></div>
+        </div>
+
+        <div class="stat-row stat-row-5">
+            <div class="stat"><div class="label">Total houses</div><div class="value" id="statTotal" th:text="${totalHouses ?: 6}">6</div></div>
+            <div class="stat"><div class="label">Occupied</div><div class="value" id="statOccupied" th:text="${occupiedHouses ?: 3}">3</div></div>
+            <div class="stat"><div class="label">Vacant</div><div class="value accent" id="statVacant" th:text="${vacantHouses ?: 3}">3</div></div>
+            <div class="stat"><div class="label">Rent overdue</div><div class="value accent" id="statOverdue" th:text="${overdueCount ?: 2}">2</div></div>
+            <div class="stat"><div class="label">Open repairs</div><div class="value" id="statOpen" th:text="${openRequests ?: 2}">2</div></div>
+        </div>
+
+        <div class="module-grid">
+            <a th:href="@{/houses}" href="houses.html" class="module-card"><h3>House Management</h3><p>Add, edit and search rental houses</p></a>
+            <a th:href="@{/tenants}" href="tenants.html" class="module-card"><h3>Tenant Management</h3><p>Add tenants to houses, remove them, send invoices</p></a>
+            <a th:href="@{/payments}" href="payments.html" class="module-card"><h3>Rent Payments</h3><p>Invoices, payments received and balances</p></a>
+            <a th:href="@{/maintenance}" href="maintenance.html" class="module-card"><h3>Maintenance Requests</h3><p>Review tenant reports and update status</p></a>
+            <a th:href="@{/reports}" href="reports.html" class="module-card"><h3>Reports</h3><p>House, tenant, payment and maintenance reports</p></a>
+        </div>
+
+        <h2 class="section-title">Recent rent payments</h2>
+        <div class="table-scroll">
+            <table class="ledger">
+                <thead><tr><th>Tenant</th><th>House</th><th>Amount</th><th>Date</th><th>Status</th></tr></thead>
+                <tbody id="recentBody">
+                <tr th:each="p : ${recentPayments}">
+                    <td th:text="${p.tenantName}">Amina Otieno</td>
+                    <td th:text="${p.houseNumber}">B-12</td>
+                    <td th:text="${p.amount}">KES 18,000</td>
+                    <td th:text="${p.date}">04 Oct 2026</td>
+                    <td><span class="badge" th:classappend="'badge-' + ${p.status}" th:text="${p.status}">paid</span></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="empty-note" id="recentEmpty" hidden>No payments yet. They will appear here when tenants pay or you record one.</p>
+    </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<dialog id="confirmDialog" class="modal modal-sm">
+    <div class="modal-body">
+        <h2 id="confirmTitle">Are you sure?</h2>
+        <p id="confirmText" class="modal-text"></p>
+        <div class="btn-row">
+            <button class="btn btn-danger" id="confirmOk" type="button">Confirm</button>
+            <button class="btn btn-ghost" id="confirmCancel" type="button">Cancel</button>
+        </div>
+    </div>
+</dialog>
+
+<!-- DEMO ONLY: demo-store.js is the fake database. Remove it when the backend is connected. -->
+<script src="js/demo-store.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/owner-dashboard.js"></script>
+</body>
+</html>

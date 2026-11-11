@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>House Management — Rental Property Management System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}" href="css/style.css">
+</head>
+<body>
+
+<div class="app-shell">
+
+    <!-- Sidebar: identical on every owner page. Later move into
+         fragments/sidebar.html and include it with th:replace. -->
+    <aside class="sidebar">
+        <span class="wordmark">Nyumba Ledger</span>
+        <nav>
+            <a th:href="@{/dashboard}" href="admin-dashboard.html">Dashboard</a>
+            <a th:href="@{/houses}" href="houses.html" class="active">House Management</a>
+            <a th:href="@{/tenants}" href="tenants.html">Tenant Management</a>
+            <a th:href="@{/payments}" href="payments.html">Rent Payments</a>
+            <a th:href="@{/maintenance}" href="maintenance.html">Maintenance Requests</a>
+            <a th:href="@{/reports}" href="reports.html">Reports</a>
+        </nav>
+        <div class="logout">
+            <a th:href="@{/logout}" href="login.html" id="logoutLink">Log out</a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="page-header">
+            <div>
+                <h1>House Management</h1>
+                <p class="subtitle">Every house you rent out, who lives there, and what it costs.</p>
+            </div>
+            <div class="page-actions"><button class="btn btn-primary" id="addHouseBtn" type="button">Add house</button></div>
+        </div>
+        <div class="toolbar">
+            <input type="search" id="search" placeholder="Search by house, type or location" aria-label="Search houses">
+            <select id="statusFilter" aria-label="Filter by status"><option value="">All houses</option><option value="available">Available</option><option value="occupied">Occupied</option></select>
+        </div>
+        <div class="table-scroll">
+            <table class="ledger">
+                <thead><tr><th>House</th><th>Type</th><th>Location</th><th>Rent</th><th>Status</th><th>Tenant</th><th>Actions</th></tr></thead>
+                <tbody id="housesBody"></tbody>
+            </table>
+        </div>
+        <p class="empty-note" id="housesEmpty" hidden>No houses match. Change your search, or add a new house.</p>
+
+<dialog id="houseDialog" class="modal">
+    <form id="houseForm" novalidate th:action="@{/houses}" method="post" action="#">
+        <h2 id="houseDialogTitle">Add house</h2>
+        <div class="form-error" id="houseError" hidden></div>
+                <div class="field"><label for="hNumber">House number</label><input type="text" id="hNumber" name="hNumber" maxlength="20" placeholder="e.g. B-12"></div>
+                <div class="field"><label for="hType">Type</label><select id="hType" name="hType"><option>Bedsitter</option><option>1-bedroom</option><option>2-bedroom apartment</option><option>3-bedroom maisonette</option><option>Other</option></select></div>
+                <div class="field"><label for="hLocation">Location</label><input type="text" id="hLocation" name="hLocation" maxlength="60" placeholder="e.g. Milimani"></div>
+                <div class="field"><label for="hRent">Monthly rent (KES)</label><input type="number" id="hRent" name="hRent" min="1" step="1"></div>
+        <div class="btn-row">
+            <button class="btn btn-primary" type="submit">Save house</button>
+            <button class="btn btn-ghost" type="button" data-close>Cancel</button>
+        </div>
+    </form>
+</dialog>
+    </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<dialog id="confirmDialog" class="modal modal-sm">
+    <div class="modal-body">
+        <h2 id="confirmTitle">Are you sure?</h2>
+        <p id="confirmText" class="modal-text"></p>
+        <div class="btn-row">
+            <button class="btn btn-danger" id="confirmOk" type="button">Confirm</button>
+            <button class="btn btn-ghost" id="confirmCancel" type="button">Cancel</button>
+        </div>
+    </div>
+</dialog>
+
+<!-- DEMO ONLY: demo-store.js is the fake database. Remove it when the backend is connected. -->
+<script src="js/demo-store.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/owner-houses.js"></script>
+</body>
+</html>

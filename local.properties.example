@@ -1,0 +1,39 @@
+# The MySQL user created by database/setup.sql
+spring.datasource.url=jdbc:mysql://localhost:3306/nyumba?sslMode=DISABLED&allowPublicKeyRetrieval=true
+spring.datasource.username=nyumba_app
+spring.datasource.password=zakayo
+
+# Owner login
+app.owner.username=owner01
+app.owner.password=admin123
+
+spring.jpa.hibernate.ddl-auto=validate
+spring.jpa.open-in-view=false
+spring.jpa.show-sql=true
+
+# Resets the owner password to the one above on the next start.
+# Remove this line after you have logged in once.
+app.owner.reset-password=true
+
+# Load sample houses, tenants and invoices (tenant01 / tenant123), only if there are no houses yet.
+app.seed-demo-data=true
+
+#---
+# PRODUCTION (Railway): only active when SPRING_PROFILES_ACTIVE=prod
+spring.config.activate.on-profile=prod
+
+server.port=${PORT:8080}
+
+spring.datasource.url=jdbc:mysql://${MYSQLHOST}:${MYSQLPORT}/${MYSQLDATABASE}
+spring.datasource.username=${MYSQLUSER}
+spring.datasource.password=${MYSQLPASSWORD}
+
+app.owner.username=owner01
+app.owner.password=${OWNER_PASSWORD}
+app.owner.reset-password=false
+app.seed-demo-data=false
+
+spring.jpa.show-sql=false
+
+server.forward-headers-strategy=framework
+server.servlet.session.cookie.secure=true

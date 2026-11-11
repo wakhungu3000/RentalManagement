@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tenant Management — Rental Property Management System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}" href="css/style.css">
+</head>
+<body>
+
+<div class="app-shell">
+
+    <!-- Sidebar: identical on every owner page. Later move into
+         fragments/sidebar.html and include it with th:replace. -->
+    <aside class="sidebar">
+        <span class="wordmark">Nyumba Ledger</span>
+        <nav>
+            <a th:href="@{/dashboard}" href="admin-dashboard.html">Dashboard</a>
+            <a th:href="@{/houses}" href="houses.html">House Management</a>
+            <a th:href="@{/tenants}" href="tenants.html" class="active">Tenant Management</a>
+            <a th:href="@{/payments}" href="payments.html">Rent Payments</a>
+            <a th:href="@{/maintenance}" href="maintenance.html">Maintenance Requests</a>
+            <a th:href="@{/reports}" href="reports.html">Reports</a>
+        </nav>
+        <div class="logout">
+            <a th:href="@{/logout}" href="login.html" id="logoutLink">Log out</a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="page-header">
+            <div>
+                <h1>Tenant Management</h1>
+                <p class="subtitle">People who rent from you. Add a tenant to a house, send invoices, or remove them when they move out.</p>
+            </div>
+            <div class="page-actions"><button class="btn btn-primary" id="addTenantBtn" type="button">Add tenant</button></div>
+        </div>
+        <div class="toolbar">
+            <input type="search" id="search" placeholder="Search by name, phone or house" aria-label="Search tenants">
+        </div>
+        <div class="table-scroll">
+            <table class="ledger">
+                <thead><tr><th>Name</th><th>Phone</th><th>House</th><th>Moved in</th><th>Balance</th><th>Rent status</th><th>Actions</th></tr></thead>
+                <tbody id="tenantsBody"></tbody>
+            </table>
+        </div>
+        <p class="empty-note" id="tenantsEmpty" hidden>No tenants yet. Use Add tenant when someone joins one of your houses.</p>
+
+<dialog id="tenantDialog" class="modal">
+    <form id="tenantForm" novalidate th:action="@{/tenants}" method="post" action="#">
+        <h2>Add tenant</h2>
+        <div class="form-error" id="tenantError" hidden></div>
+                <div class="field"><label for="tName">Full name</label><input type="text" id="tName" name="tName" maxlength="80"></div>
+        <div class="field-row">
+                <div class="field"><label for="tPhone">Phone</label><input type="tel" id="tPhone" name="tPhone" maxlength="20" placeholder="0712 345 678"></div>
+                <div class="field"><label for="tEmail">Email (optional)</label><input type="email" id="tEmail" name="tEmail" maxlength="80"></div>
+        </div>
+        <div class="field-row">
+                <div class="field"><label for="tIdNo">National ID number</label><input type="text" id="tIdNo" name="tIdNo" maxlength="20"></div>
+                <div class="field"><label for="tMoveIn">Move-in date</label><input type="date" id="tMoveIn" name="tMoveIn" ></div>
+        </div>
+                <div class="field"><label for="tHouse">House</label><select id="tHouse" name="houseId"></select></div>
+        <label class="check"><input type="checkbox" id="tInvoice" checked> Send the first rent invoice now</label>
+        <div class="btn-row">
+            <button class="btn btn-primary" id="saveTenantBtn" type="submit">Add tenant</button>
+            <button class="btn btn-ghost" type="button" data-close>Cancel</button>
+        </div>
+    </form>
+</dialog>
+
+<dialog id="credDialog" class="modal modal-sm">
+    <div class="modal-body">
+        <h2><span id="cName"></span> is added to <span id="cHouse"></span></h2>
+        <p class="modal-text">Give these login details to your tenant so they can view invoices, pay rent and report repairs.</p>
+        <dl class="detail-list cred">
+            <dt>Username</dt><dd><code id="cUser"></code></dd>
+            <dt>Password</dt><dd><code id="cPass"></code></dd>
+        </dl>
+        <div class="btn-row"><button class="btn btn-primary" type="button" data-close>Done</button></div>
+    </div>
+</dialog>
+
+<dialog id="invoiceDialog" class="modal">
+    <form id="invoiceForm" novalidate th:action="@{/invoices}" method="post" action="#">
+        <h2>Send invoice</h2>
+        <div class="form-error" id="invError" hidden></div>
+                <div class="field"><label for="iTenant">Tenant</label><select id="iTenant" name="tenantId"></select></div>
+                <div class="field"><label for="iPeriod">What it covers</label><input type="text" id="iPeriod" name="iPeriod" maxlength="60" placeholder="e.g. December 2026 rent"></div>
+        <div class="field-row">
+                <div class="field"><label for="iAmount">Amount (KES)</label><input type="number" id="iAmount" name="iAmount" min="1" step="1"></div>
+                <div class="field"><label for="iDue">Due date</label><input type="date" id="iDue" name="iDue" ></div>
+        </div>
+                <div class="field"><label for="iNote">Note to tenant (optional)</label><textarea id="iNote" name="note" rows="2" maxlength="200"></textarea></div>
+        <div class="btn-row">
+            <button class="btn btn-primary" type="submit">Send invoice</button>
+            <button class="btn btn-ghost" type="button" data-close>Cancel</button>
+        </div>
+    </form>
+</dialog>
+
+<dialog id="invoiceView" class="modal">
+    <div class="modal-body">
+        <div class="invoice-doc">
+            <div class="inv-head">
+                <div><span class="wordmark inv-brand">Nyumba Ledger</span><p class="inv-sub">Rental invoice</p></div>
+                <div class="inv-meta"><strong id="ivNo"></strong><br>Issued <span id="ivIssued"></span><br><span id="ivStatus"></span></div>
+            </div>
+            <dl class="detail-list">
+                <dt>Billed to</dt><dd><span id="ivTenant"></span><br><small id="ivContact"></small></dd>
+                <dt>House</dt><dd id="ivHouse"></dd>
+                <dt>Covers</dt><dd id="ivPeriod"></dd>
+                <dt>Amount</dt><dd id="ivAmount"></dd>
+                <dt>Paid so far</dt><dd id="ivPaid"></dd>
+                <dt>Balance due</dt><dd><strong id="ivBalance"></strong></dd>
+                <dt>Pay by</dt><dd id="ivDue"></dd>
+            </dl>
+            <p class="inv-note" id="ivNote"></p>
+        </div>
+        <div class="btn-row no-print">
+            <button class="btn btn-primary" id="printInvoiceBtn" type="button">Print or save as PDF</button>
+            <button class="btn btn-ghost" type="button" data-close>Close</button>
+        </div>
+    </div>
+</dialog>
+    </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<dialog id="confirmDialog" class="modal modal-sm">
+    <div class="modal-body">
+        <h2 id="confirmTitle">Are you sure?</h2>
+        <p id="confirmText" class="modal-text"></p>
+        <div class="btn-row">
+            <button class="btn btn-danger" id="confirmOk" type="button">Confirm</button>
+            <button class="btn btn-ghost" id="confirmCancel" type="button">Cancel</button>
+        </div>
+    </div>
+</dialog>
+
+<script src="js/api.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/owner-invoice.js"></script>
+<script src="js/owner-tenants.js"></script>
+</body>
+</html>

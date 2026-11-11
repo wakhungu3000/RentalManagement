@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>My Rental — Rental Property Management System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}" href="css/style.css">
+</head>
+<body>
+
+<div class="app-shell">
+
+    <aside class="sidebar">
+        <span class="wordmark">Nyumba Ledger</span>
+        <nav id="tenantNav">
+            <a href="#rental" data-panel="rental" class="active">My rental</a>
+            <a href="#pay" data-panel="pay">Pay rent</a>
+            <a href="#maintenance" data-panel="maintenance">Maintenance</a>
+        </nav>
+        <div class="logout">
+            <a th:href="@{/logout}" href="login.html" id="logoutLink">Log out</a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+
+        <div class="page-header">
+            <div>
+                <h1>Hello, <span id="tenantName" th:text="${tenant != null ? tenant.name : 'Amina Otieno'}">Amina Otieno</span></h1>
+                <p class="subtitle">Your home, your rent and your repair requests in one place.</p>
+            </div>
+        </div>
+
+        <!-- ============ PANEL 1: MY RENTAL ============ -->
+        <section class="panel" id="panel-rental">
+            <div class="stat-row stat-row-3">
+                <div class="stat">
+                    <div class="label">Monthly rent</div>
+                    <div class="value" id="statRent" th:text="${rentFormatted ?: 'KES 18,000'}">KES 18,000</div>
+                </div>
+                <div class="stat">
+                    <div class="label">Balance due</div>
+                    <div class="value accent" id="statBalance" th:text="${balanceFormatted ?: 'KES 18,000'}">KES 18,000</div>
+                </div>
+                <div class="stat">
+                    <div class="label">Next due date</div>
+                    <div class="value" id="statDue" th:text="${nextDue ?: '05 Dec 2026'}">05 Dec 2026</div>
+                </div>
+            </div>
+
+            <div class="two-col">
+                <div>
+                    <h2 class="section-title first">Your house</h2>
+                    <dl class="detail-list">
+                        <dt>House</dt><dd id="dHouse" th:text="${house?.number ?: 'B-12'}">B-12</dd>
+                        <dt>Type</dt><dd id="dType" th:text="${house?.type ?: '2-bedroom apartment'}">2-bedroom apartment</dd>
+                        <dt>Location</dt><dd id="dLocation" th:text="${house?.location ?: 'Milimani, Kisumu'}">Milimani, Kisumu</dd>
+                        <dt>Lease started</dt><dd id="dLease" th:text="${lease?.start ?: '01 Feb 2026'}">01 Feb 2026</dd>
+                        <dt>Status</dt><dd><span class="badge badge-occupied">occupied</span></dd>
+                    </dl>
+                </div>
+                <div>
+                    <h2 class="section-title first">Landlord contact</h2>
+                    <dl class="detail-list">
+                        <dt>Name</dt><dd th:text="${landlord?.name ?: 'Property Owner'}">Property Owner</dd>
+                        <dt>Phone</dt><dd th:text="${landlord?.phone ?: '+254 700 000 000'}">+254 700 000 000</dd>
+                        <dt>Email</dt><dd th:text="${landlord?.email ?: 'owner@nyumbaledger.example'}">owner@nyumbaledger.example</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <h2 class="section-title">Invoices from your landlord</h2>
+            <div class="table-scroll">
+                <table class="ledger">
+                    <thead><tr><th>Invoice</th><th>Covers</th><th>Amount</th><th>Balance</th><th>Due</th><th>Status</th></tr></thead>
+                    <tbody id="invoiceBody"></tbody>
+                </table>
+            </div>
+            <p class="empty-note" id="invoiceEmpty" hidden>No invoices yet. Your landlord will send one when rent is due.</p>
+
+            <h2 class="section-title">Payment history</h2>
+            <div class="table-scroll">
+                <table class="ledger">
+                    <thead><tr><th>Date</th><th>Amount</th><th>Method</th><th>Reference</th><th>Status</th></tr></thead>
+                    <tbody id="historyBody">
+                        <!-- Filled by js/tenant.js now; later replace with th:each over ${payments} -->
+                    </tbody>
+                </table>
+            </div>
+            <p class="empty-note" id="historyEmpty" hidden>No payments recorded yet. Use Pay rent to make your first payment.</p>
+        </section>
+
+        <!-- ============ PANEL 2: PAY RENT ============ -->
+        <section class="panel" id="panel-pay" hidden>
+            <h2 class="section-title first">Pay rent</h2>
+            <p class="panel-intro">Balance due: <strong id="payBalance">KES 18,000</strong></p>
+
+            <div class="form-error" id="payError" hidden></div>
+
+            <form id="payForm" class="panel-form" th:action="@{/tenant/payments}" method="post" action="#" novalidate>
+                <div class="field">
+                    <label for="payAmount">Amount (KES)</label>
+                    <input type="number" id="payAmount" name="amount" min="1" step="1" required>
+                </div>
+                <div class="field">
+                    <label for="payMethod">Payment method</label>
+                    <select id="payMethod" name="method">
+                        <option>M-Pesa</option>
+                        <option>Bank transfer</option>
+                        <option>Cash</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="payRef">Transaction reference</label>
+                    <input type="text" id="payRef" name="reference" placeholder="e.g. QGH7X2K9LP" maxlength="30">
+                </div>
+                <div class="btn-row">
+                    <button type="submit" class="btn btn-primary">Pay rent</button>
+                    <button type="reset" class="btn btn-ghost" id="payReset">Clear</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- ============ PANEL 3: MAINTENANCE ============ -->
+        <section class="panel" id="panel-maintenance" hidden>
+            <h2 class="section-title first">Report a problem</h2>
+
+            <div class="form-error" id="mError" hidden></div>
+
+            <form id="maintForm" class="panel-form" th:action="@{/tenant/maintenance}" method="post" action="#" novalidate>
+                <div class="field">
+                    <label for="mCategory">What needs fixing?</label>
+                    <select id="mCategory" name="category">
+                        <option>Plumbing</option>
+                        <option>Electrical</option>
+                        <option>Doors and locks</option>
+                        <option>Roof or walls</option>
+                        <option>Other</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="mPriority">How urgent is it?</label>
+                    <select id="mPriority" name="priority">
+                        <option>Low</option>
+                        <option selected>Normal</option>
+                        <option>Urgent</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="mDesc">Describe the problem</label>
+                    <textarea id="mDesc" name="description" rows="4" maxlength="500" placeholder="e.g. The kitchen tap has been leaking since Monday." required></textarea>
+                </div>
+                <div class="btn-row">
+                    <button type="submit" class="btn btn-primary">Send request</button>
+                    <button type="reset" class="btn btn-ghost">Clear</button>
+                </div>
+            </form>
+
+            <h2 class="section-title">Your requests</h2>
+            <div class="table-scroll">
+                <table class="ledger">
+                    <thead><tr><th>Date</th><th>Category</th><th>Priority</th><th>Description</th><th>Status</th></tr></thead>
+                    <tbody id="maintBody"></tbody>
+                </table>
+            </div>
+            <p class="empty-note" id="maintEmpty" hidden>No requests yet. Anything you report will be listed here.</p>
+        </section>
+
+    </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<!-- DEMO ONLY: this script fakes data in the browser (localStorage).
+     Delete it when Spring Boot supplies the real data and handles the forms. -->
+<script src="js/demo-store.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/tenant.js"></script>
+</body>
+</html>
